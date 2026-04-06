@@ -1,6 +1,7 @@
 #include "shell.h"
 #include "kapi.h"
 #include "vfs.h"
+#include "ata.h"
 #include "kprint.h"
 #include "framebuffer.h"
 #include "keyboard.h"
@@ -55,7 +56,34 @@ static void resolve_path(const char *input, char *out, int max)
     out[cwdlen + kstrlen(input)] = '\0';
 }
 
+static void cmd_disks(void)
+{
+    const char *bus_names[] = {"Primary", "Secondary"};
+    const char *drv_names[] = {"Master", "Slave"};
+    int found = 0;
 
+    kputs("\n");
+    for (int bus = 0; bus < 2; bus++) {
+        for (int drv = 0; drv < 2; drv++) {
+            ata_disk_t *d = &ata_disks[bus][drv];
+            if (!d->present) continue;
+            found = 1;
+
+            uint32_t mb = (d->sectors / 2) / 1024;
+
+            kputs("  ");
+            kputs_col(bus_names[bus], COLOR_PROMPT);
+            kputs(" ");
+            kputs(drv_names[drv]);
+            kputs(": ");
+            kputs_col(d->model[0] ? d->model : "(no model)", COLOR_DIR);
+            kputs(" — ");
+            kputdec((uint64_t)mb);
+            kputs(" MB\n");
+        }
+    }
+    if (!found) kputs("  no disks found\n");
+}
 
 static void cmd_ls(int argc, char *argv[])
 {
@@ -282,7 +310,7 @@ static void cmd_help(void)
     kputs("    write <path> <text>  write text to file\n");
     kputs("    hexdump <path>       hex dump file\n");
     kputs_col("  Execution:\n", COLOR_PROMPT);
-    kputs("    exec <path>          run flat binary from VFS\n");
+    kputs("    exec <path>          run flat binary from VFS (now dont work, maybe late <3)\n");
     kputs_col("  Other:\n", COLOR_PROMPT);
     kputs("    echo <text>          print text\n");
     kputs("    clear                clear screen\n");
@@ -304,6 +332,7 @@ void shell_exec(const char *input)
 
     if      (kstrcmp(argv[0], "help")    == 0) cmd_help();
     else if (kstrcmp(argv[0], "clear")   == 0) { fb_fill(COLOR_BG); fb_cursor_x = 0; fb_cursor_y = 0; }
+    else if (kstrcmp(argv[0], "disks")   == 0) cmd_disks();
     else if (kstrcmp(argv[0], "cd")      == 0) cmd_cd(argc, argv);
     else if (kstrcmp(argv[0], "pwd")     == 0) cmd_pwd();
     else if (kstrcmp(argv[0], "ls")      == 0) cmd_ls(argc, argv);

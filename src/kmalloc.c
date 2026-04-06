@@ -1,8 +1,6 @@
 #include "kmalloc.h"
 
 
-
-
 #define ALIGN8(x) (((x) + 7) & ~7)
 
 typedef struct block_header {

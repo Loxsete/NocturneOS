@@ -10,12 +10,10 @@
 #include "tmpfs.h"
 #include "procfs.h"
 #include "initramfs.h"
-
+#include "ata.h"
 
 extern uint8_t _binary_build_initramfs_cpio_start[];
 extern uint8_t _binary_build_initramfs_cpio_end[];
-
-
 
 static uint8_t kernel_heap[4 * 1024 * 1024];
  
@@ -32,7 +30,8 @@ void vfs_setup(void *initramfs_data, uint64_t initramfs_size)
     vfs_mkdir("/etc");
     vfs_mkdir("/bin");
     vfs_mkdir("/tmp");
- 
+    
+
     vfs_node_t *proc = procfs_create();
     vfs_mount("/proc", proc);
  
@@ -56,6 +55,7 @@ void _start(void)
     fb_init(fb->address, fb->width, fb->height, fb->pitch, fb->bpp);
     fb_fill(COLOR_BG);
 
+    ata_init();
     kb_init();
     vfs_setup(
         _binary_build_initramfs_cpio_start,

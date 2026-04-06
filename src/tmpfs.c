@@ -1,8 +1,6 @@
 #include "tmpfs.h"
 #include "kmalloc.h"
 
-
-
 #define TMPFS_MAX_CHILDREN 64
 
 typedef struct tmpfs_node_data {
@@ -42,7 +40,6 @@ static vfs_ops_t   tmpfs_file_ops;
 static vfs_ops_t   tmpfs_dir_ops;
 
 
-
 static int64_t tmpfs_read(vfs_node_t *node, void *buf, uint64_t offset, uint64_t size)
 {
     tmpfs_data_t *d = (tmpfs_data_t *)node->fs_data;
@@ -74,8 +71,6 @@ static int64_t tmpfs_write(vfs_node_t *node, const void *buf, uint64_t offset, u
     kmemcpy(d->buf + offset, buf, size);
     return (int64_t)size;
 }
-
-
 
 static vfs_node_t *tmpfs_finddir(vfs_node_t *node, const char *name)
 {

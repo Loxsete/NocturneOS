@@ -2,3 +2,6 @@ kernel.elf
 lxtos.iso
 build/
 limine/
+iso_root/
+.vscode/
+disk.img

@@ -26,7 +26,6 @@ int vfs_mount(const char *path, vfs_node_t *fs_root)
     kstrcpy(mount_table[mount_count].path, path, VFS_MAX_PATH);
     mount_table[mount_count].root = fs_root;
     mount_count++;
-
     
     if (kstrcmp(path, "/") != 0) {
         vfs_node_t *node = vfs_resolve(path);
