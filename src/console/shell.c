@@ -72,7 +72,6 @@ static void cmd_help(void)
     out("  rm <path>          - remove file\n");
     out("  write <file> <txt> - write text to file\n");
     out("  tree [path]        - recursive directory tree\n");
-    out("  mount <path>       - show mount point info\n");
     out("  disks              - list detected ATA disks\n");
     out("  help               - this message\n");
 }
