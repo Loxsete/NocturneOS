@@ -11,6 +11,17 @@
 #include <fs/procfs.h>
 #include <fs/initramfs.h>
 #include <drivers/ata.h>
+#include <drivers/console.h>
+#include <console/kprint.h>
+
+void draw_banner(void)
+{
+    fb_cursor_x = 0;
+    fb_cursor_y = 0;
+    kputs_col("lxtos kernel\n", COLOR_PROMPT);
+    kputs("type 'help' for commands\n");
+}
+
 
 extern uint8_t _binary_build_initramfs_cpio_start[];
 extern uint8_t _binary_build_initramfs_cpio_end[];
@@ -31,6 +42,15 @@ void vfs_setup(void *initramfs_data, uint64_t initramfs_size)
     vfs_mkdir("/bin");
     vfs_mkdir("/tmp");
     
+
+vfs_node_t *dev = vfs_resolve("/dev");
+
+if (dev && dev->ops && dev->ops->mkfile) {
+    vfs_node_t *node = dev->ops->mkfile(dev, "console");
+    if (node) {
+        console_init_node(node);
+    }
+}
 
     vfs_node_t *proc = procfs_create();
     vfs_mount("/proc", proc);
