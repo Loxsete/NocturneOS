@@ -24,6 +24,19 @@ static int64_t console_write(vfs_node_t *node, const void *buf, uint64_t offset,
     (void)node; (void)offset;
 
     const char *in = (const char *)buf;
+
+    if (size >= 4 &&
+        in[0] == '\x1b' &&
+        in[1] == '[' &&
+        in[2] == '2' &&
+        in[3] == 'J')
+    {
+        fb_fill(COLOR_BG);
+        fb_cursor_x = 0;
+        fb_cursor_y = 0;
+        return size;
+    }
+
     for (uint64_t i = 0; i < size; i++)
         fb_putchar_cursor(in[i], COLOR_FG, COLOR_BG);
 

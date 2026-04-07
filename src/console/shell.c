@@ -2,6 +2,7 @@
 #include <fs/vfs.h>
 #include <drivers/ata.h>
 #include <lib/kstring.h>
+#include <lib/kitoa.h>
 
 #define INPUT_BUF_SIZE 256
 
@@ -50,15 +51,7 @@ static void resolve_path(const char *input, char *result, int max)
     result[len] = 0;
 }
 
-static void itoa_simple(uint32_t n, char *buf)
-{
-    if (n == 0) { buf[0] = '0'; buf[1] = 0; return; }
-    char tmp[12]; int i = 0;
-    while (n) { tmp[i++] = '0' + (n % 10); n /= 10; }
-    int j = 0;
-    for (int k = i - 1; k >= 0; k--) buf[j++] = tmp[k];
-    buf[j] = 0;
-}
+
 
 static void cmd_help(void)
 {
@@ -74,6 +67,11 @@ static void cmd_help(void)
     out("  tree [path]        - recursive directory tree\n");
     out("  disks              - list detected ATA disks\n");
     out("  help               - this message\n");
+}
+
+static void cmd_clear(void)
+{
+    out("\x1b[2J");
 }
 
 static void cmd_ls(int argc, char *argv[])
@@ -217,7 +215,7 @@ static void cmd_disks(void)
             out(drv == 0 ? " master  " : " slave   ");
             out(d->model);
             out("  ");
-            itoa_simple(d->sectors / 2048, buf);
+            kitoa(d->sectors / 2048, buf);
             out(buf);
             out(" MB\n");
         }
@@ -248,14 +246,17 @@ void shell_exec(const char *input)
     else if (!kstrcmp(argv[0], "write")) cmd_write(argc, argv);
     else if (!kstrcmp(argv[0], "tree"))  cmd_tree(argc, argv);
     else if (!kstrcmp(argv[0], "disks")) cmd_disks();
+    else if (!kstrcmp(argv[0], "clear")) cmd_clear();
     else { out("\nunknown: "); out(argv[0]); out("\n"); }
 }
 
 void shell_prompt(void)
 {
     out("\n");
+    out("[");
     out(cwd);
-    out(" $ ");
+    out("] ");
+    out(">> ");
 }
 
 void shell_run(void)
