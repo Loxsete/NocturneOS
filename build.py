@@ -24,12 +24,12 @@ LDFLAGS = [
     "-T", "linker.ld", "-z", "max-page-size=0x1000"
 ]
 
-KERNEL   = "kernel.elf"
-ISO      = "lxtos.iso"
+KERNEL = "kernel.elf"
+ISO = "lxtos.iso"
 DISK_IMG = "disk.img"
 
 LIMINE_REPO = "https://codeberg.org/Limine/Limine.git"
-LIMINE_DIR  = "limine"
+LIMINE_DIR = "limine"
 
 
 def run(cmd, **kwargs):
@@ -39,6 +39,7 @@ def run(cmd, **kwargs):
         print(f"Error: command finished with code {result.returncode}")
         sys.exit(result.returncode)
 
+
 def sh(cmd):
     print(cmd)
     ret = os.system(cmd)
@@ -46,10 +47,12 @@ def sh(cmd):
         print(f"Error: '{cmd}' finished with code {ret}")
         sys.exit(1)
 
+
 def newer(src, dst):
     if not os.path.exists(dst):
         return True
     return os.path.getmtime(src) > os.path.getmtime(dst)
+
 
 def find_files(directory, extension):
     return glob.glob(f"{directory}/**/*{extension}", recursive=True)
