@@ -17,6 +17,7 @@
 #include <arch/x86_64/idt.h>
 #include <arch/x86_64/tss.h>
 #include <arch/x86_64/usermode.h>
+#include <fs/ext2.h>
 
 extern void user_shell(void);
 
@@ -45,6 +46,7 @@ void vfs_setup(void *initramfs_data, uint64_t initramfs_size)
     vfs_mkdir("/etc");
     vfs_mkdir("/bin");
     vfs_mkdir("/tmp");
+    vfs_mkdir("/mnt");
     vfs_node_t *dev = vfs_resolve("/dev");
     if (dev && dev->ops && dev->ops->mkfile) {
         vfs_node_t *node = dev->ops->mkfile(dev, "console");
@@ -57,6 +59,27 @@ void vfs_setup(void *initramfs_data, uint64_t initramfs_size)
     procfs_register("cpuinfo", proc_cpu_read);
     if (initramfs_data && initramfs_size > 0)
         initramfs_unpack(initramfs_data, initramfs_size, root);
+}
+
+static void mount_ext2(void)
+{
+    char buf[4] = "0";
+    for (int bus = 0; bus < 2; bus++) {
+        for (int drv = 0; drv < 2; drv++) {
+            if (!ata_disks[bus][drv].present) continue;
+            vfs_node_t *r = ext2_mount(bus, drv);
+            if (r) {
+                vfs_mount("/mnt", r);
+                buf[0] = '0' + bus;
+                kputs("ext2: mounted bus="); kputs(buf);
+                buf[0] = '0' + drv;
+                kputs(" drv="); kputs(buf);
+                kputs("\n");
+                return;
+            }
+        }
+    }
+    kputs("ext2:no ext2 disk found\n");
 }
 
 void _start(void)
@@ -79,6 +102,7 @@ void _start(void)
         _binary_build_initramfs_cpio_start,
         _binary_build_initramfs_cpio_end - _binary_build_initramfs_cpio_start
     );
+    mount_ext2();
     kputs_col("lxtos kernel\n", COLOR_PROMPT);
     jump_usermode((uint64_t)user_shell,
                   (uint64_t)(user_stack + sizeof(user_stack)));

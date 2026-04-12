@@ -107,7 +107,7 @@ int ata_read_sector(int bus, ata_drive_t drive, uint32_t lba, uint16_t *buffer) 
 int ata_write_sector(int bus, ata_drive_t driver, uint32_t lba, uint16_t *buffer) {
     uint16_t base = bases[bus];
 
-    outb(base + ATA_REG_HDDEVSEL, 0x0E | (driver << 4) | ((lba >> 24) & 0x0F));
+    outb(base + ATA_REG_HDDEVSEL, 0xE0 | (driver << 4) | ((lba >> 24) & 0x0F));
     io_wait();
     outb(base + ATA_REG_SECCOUNT, 1);
     outb(base + ATA_REG_LBA0, (uint8_t)(lba));

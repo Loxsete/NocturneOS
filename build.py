@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""build for lxtos"""
+"""Build system for lxtos."""
 
+import glob
 import os
 import subprocess
 import sys
-import glob
 
 CC = "gcc"
 LD = "ld"
@@ -16,12 +16,12 @@ CFLAGS = [
     "-mno-mmx", "-mno-sse", "-mno-sse2",
     "-mcmodel=kernel", "-nostdlib",
     "-Wall", "-Wextra", "-O2",
-    "-Iinclude"
+    "-Iinclude",
 ]
 ASFLAGS = ["-f", "elf64"]
 LDFLAGS = [
     "-m", "elf_x86_64", "-nostdlib", "-static",
-    "-T", "linker.ld", "-z", "max-page-size=0x1000"
+    "-T", "linker.ld", "-z", "max-page-size=0x1000",
 ]
 
 KERNEL = "kernel.elf"
@@ -74,6 +74,17 @@ def get_sources():
         jobs.append(("asm", src, obj))
     return jobs
 
+
+def populate_disk():
+    if not os.path.exists(DISK_IMG):
+        run(["dd", "if=/dev/zero", f"of={DISK_IMG}", "bs=1M", "count=64"])
+        run(["mkfs.ext2", "-b", "1024", DISK_IMG])
+    sh("mkdir -p /tmp/lxtos_mnt")
+    sh(f"sudo mount -o loop {DISK_IMG} /tmp/lxtos_mnt")
+    sh("sudo mkdir -p /tmp/lxtos_mnt/etc")
+    sh("echo 'hello from ext2' | sudo tee /tmp/lxtos_mnt/etc/hello.txt")
+    sh("echo 'lxtos' | sudo tee /tmp/lxtos_mnt/etc/hostname")
+    sh(f"sudo umount /tmp/lxtos_mnt")
 
 def build_initramfs():
     os.makedirs("build", exist_ok=True)
@@ -136,13 +147,14 @@ def build_iso():
         "--efi-boot", "boot/limine/limine-uefi-cd.bin",
         "-efi-boot-part", "--efi-boot-image",
         "--protective-msdos-label",
-        "iso_root", "-o", ISO
+        "iso_root", "-o", ISO,
     ])
 
 
 def create_disk():
     if not os.path.exists(DISK_IMG):
         run(["dd", "if=/dev/zero", f"of={DISK_IMG}", "bs=1M", "count=64"])
+        run(["mkfs.ext2", "-b", "1024", DISK_IMG])
 
 
 def run_qemu():
@@ -151,11 +163,11 @@ def run_qemu():
     run([
         "qemu-system-x86_64",
         "-cdrom", ISO,
-        "-drive", f"file={DISK_IMG},format=raw,if=ide,index=0",
+        "-drive", f"file={DISK_IMG},format=raw,if=ide,index=1",
         "-m", "128M",
         "-vga", "std",
         "-no-reboot",
-        "-no-shutdown"
+        "-no-shutdown",
     ])
 
 
@@ -164,11 +176,17 @@ def clean():
     sh(f"rm -f {KERNEL} {ISO}")
 
 
+def clean_disk():
+    sh(f"rm -f {DISK_IMG}")
+
+
 TARGETS = {
-    "all":   build_kernel,
-    "iso":   build_iso,
-    "run":   run_qemu,
+    "all": build_kernel,
+    "iso": build_iso,
+    "run": run_qemu,
     "clean": clean,
+    "clean-disk": clean_disk,
+    "disk-populate": populate_disk,
 }
 
 if __name__ == "__main__":

@@ -43,6 +43,8 @@ typedef struct {
     vfs_node_t *root;
 } vfs_mount_t;
 
+
+
 extern vfs_node_t *vfs_root;
 
 void        vfs_init(void);
@@ -59,3 +61,4 @@ int64_t     vnode_read (vfs_node_t *node, void *buf, uint64_t offset, uint64_t s
 int64_t     vnode_write(vfs_node_t *node, const void *buf, uint64_t offset, uint64_t size);
 vfs_node_t *vnode_finddir(vfs_node_t *node, const char *name);
 vfs_node_t *vnode_readdir(vfs_node_t *node, uint32_t index);
+vfs_node_t *ext2_mount(int bus, int drive);

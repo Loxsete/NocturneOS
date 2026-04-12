@@ -9,3 +9,14 @@ void kitoa(uint32_t n, char *buf)
     for (int k = i - 1; k >= 0; k--) buf[j++] = tmp[k];
     buf[j] = 0;
 }
+
+void kitoa_hex(uint64_t val, char *buf)
+{
+    const char *hex = "0123456789ABCDEF";
+    int i = 15;
+    buf[16] = '\0';
+    while (i >= 0) {
+        buf[i--] = hex[val & 0xF];
+        val >>= 4;
+    }
+}
