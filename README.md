@@ -6,4 +6,4 @@ python3 build.py run
 No Makefile cauze i dont like him
 
 
-<img width="1918" height="1079" alt="image" src="https://github.com/user-attachments/assets/81a1a78f-bf88-4eca-84ae-edc46c8947ae" />
+<img width="1920" height="1075" alt="image" src="https://github.com/user-attachments/assets/d8de3300-0a2d-414c-b721-3ba16d206886" />
