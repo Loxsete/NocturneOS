@@ -163,7 +163,7 @@ void user_shell(void)
 {
     static char input[MAX_INPUT];
 
-    u_puts("\nlxtos userspace shell!!!\n");
+    u_puts("\nNocturneOS userspace shell!!!\n");
 
     print_ascii();
 

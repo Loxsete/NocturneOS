@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build system for lxtos."""
+"""Build system for NocturneOS."""
 
 import glob
 import os
@@ -25,7 +25,7 @@ LDFLAGS = [
 ]
 
 KERNEL = "kernel.elf"
-ISO = "lxtos.iso"
+ISO = "NocturneOS.iso"
 DISK_IMG = "disk.img"
 
 LIMINE_REPO = "https://codeberg.org/Limine/Limine.git"
@@ -79,19 +79,19 @@ def populate_disk():
     if not os.path.exists(DISK_IMG):
         run(["dd", "if=/dev/zero", f"of={DISK_IMG}", "bs=1M", "count=64"])
         run(["mkfs.ext2", "-b", "1024", DISK_IMG])
-    sh("mkdir -p /tmp/lxtos_mnt")
-    sh(f"sudo mount -o loop {DISK_IMG} /tmp/lxtos_mnt")
-    sh("sudo mkdir -p /tmp/lxtos_mnt/etc")
-    sh("echo 'hello from ext2' | sudo tee /tmp/lxtos_mnt/etc/hello.txt")
-    sh("echo 'lxtos' | sudo tee /tmp/lxtos_mnt/etc/hostname")
-    sh(f"sudo umount /tmp/lxtos_mnt")
+    sh("mkdir -p /tmp/NocturneOS_mnt")
+    sh(f"sudo mount -o loop {DISK_IMG} /tmp/NocturneOS_mnt")
+    sh("sudo mkdir -p /tmp/NocturneOS_mnt/etc")
+    sh("echo 'hello from ext2' | sudo tee /tmp/NocturneOS_mnt/etc/hello.txt")
+    sh("echo 'NocturneOS' | sudo tee /tmp/NocturneOS_mnt/etc/hostname")
+    sh(f"sudo umount /tmp/NocturneOS_mnt")
 
 def build_initramfs():
     os.makedirs("build", exist_ok=True)
     os.makedirs("initramfs/bin", exist_ok=True)
     os.makedirs("initramfs/etc", exist_ok=True)
     with open("initramfs/etc/osname", "w") as f:
-        f.write("lxtos\n")
+        f.write("NocturneOS\n")
     sh("cd initramfs && find . | cpio -o -H newc > ../build/initramfs.cpio")
     run([LD, "-r", "-b", "binary",
          "build/initramfs.cpio", "-o", "build/initramfs_bin.o"])

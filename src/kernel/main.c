@@ -103,7 +103,7 @@ void _start(void)
         _binary_build_initramfs_cpio_end - _binary_build_initramfs_cpio_start
     );
     mount_ext2();
-    kputs_col("lxtos kernel\n", COLOR_PROMPT);
+    kputs_col("NocturneOS kernel\n", COLOR_PROMPT);
     jump_usermode((uint64_t)user_shell,
                   (uint64_t)(user_stack + sizeof(user_stack)));
     for (;;) __asm__ volatile("hlt");
