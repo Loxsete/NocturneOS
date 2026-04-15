@@ -1,12 +1,17 @@
 #include <drivers/keyboard.h>
+#include <drivers/framebuffer.h>
 #include <stdint.h>
 #include <arch/x86_64/io.h>
 
-
 #define KB_DATA    0x60
 #define KB_STATUS  0x64
-#define KB_CMD     0x64
 
+#define SC_LSHIFT   0x2A
+#define SC_RSHIFT   0x36
+#define SC_LSHIFT_R 0xAA
+#define SC_RSHIFT_R 0xB6
+#define SC_LCTRL    0x1D
+#define SC_LCTRL_R  0x9D
 
 static const char scancode_map[128] = {
     0,   27,  '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
@@ -38,12 +43,8 @@ static const char scancode_map_shift[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-#define SC_LSHIFT   0x2A
-#define SC_RSHIFT   0x36
-#define SC_LSHIFT_R 0xAA
-#define SC_RSHIFT_R 0xB6
-
 static int shift_held = 0;
+static int ctrl_held  = 0;
 
 void kb_init(void)
 {
@@ -58,17 +59,37 @@ int kb_has_key(void)
 
 char kb_getchar(void)
 {
-    char c = 0;
-    while (!c) {
+    while (1) {
         while (!kb_has_key());
         uint8_t sc = inb(KB_DATA);
 
-        if (sc == SC_LSHIFT || sc == SC_RSHIFT) { shift_held = 1; continue; }
+        if (sc == SC_LSHIFT || sc == SC_RSHIFT)   { shift_held = 1; continue; }
         if (sc == SC_LSHIFT_R || sc == SC_RSHIFT_R) { shift_held = 0; continue; }
+        if (sc == SC_LCTRL)   { ctrl_held = 1; continue; }
+        if (sc == SC_LCTRL_R) { ctrl_held = 0; continue; }
         if (sc & 0x80) continue;
         if (sc >= 128) continue;
 
-        c = shift_held ? scancode_map_shift[sc] : scancode_map[sc];
+        char c = shift_held ? scancode_map_shift[sc] : scancode_map[sc];
+        if (!c) continue;
+
+        if (ctrl_held) {
+            if (c == '=' || c == '+') {
+                if (fb_font_scale < 4) fb_font_scale++;
+                fb_fill(COLOR_BG);
+                fb_cursor_x = 0;
+                fb_cursor_y = 0;
+                continue;
+            }
+            if (c == '-') {
+                if (fb_font_scale > 1) fb_font_scale--;
+                fb_fill(COLOR_BG);
+                fb_cursor_x = 0;
+                fb_cursor_y = 0;
+                continue;
+            }
+        }
+
+        return c;
     }
-    return c;
 }

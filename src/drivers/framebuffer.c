@@ -11,6 +11,7 @@ static uint32_t fb_bytes_per_pixel;
 
 uint32_t fb_cursor_x = 0;
 uint32_t fb_cursor_y = 0;
+uint32_t fb_font_scale = 1;
 
 void fb_init(void *addr, uint64_t width, uint64_t height, uint64_t pitch, uint16_t bpp)
 {
@@ -47,25 +48,32 @@ void fb_putchar(uint32_t x, uint32_t y, char c, uint32_t fg, uint32_t bg)
     for (int row = 0; row < FONT_HEIGHT; row++)
         for (int col = 0; col < FONT_WIDTH; col++) {
             int bit = (glyph[row] >> (7 - col)) & 1;
-            fb_putpixel(x + col, y + row, bit ? fg : bg);
+            uint32_t color = bit ? fg : bg;
+            for (uint32_t sy = 0; sy < fb_font_scale; sy++)
+                for (uint32_t sx = 0; sx < fb_font_scale; sx++)
+                    fb_putpixel(x + col * fb_font_scale + sx,
+                                y + row * fb_font_scale + sy, color);
         }
 }
 
 void fb_puts(uint32_t x, uint32_t y, const char *s, uint32_t fg, uint32_t bg)
 {
     uint32_t cx = x;
+    uint32_t cw = FONT_WIDTH  * fb_font_scale;
+    uint32_t ch = FONT_HEIGHT * fb_font_scale;
     while (*s) {
-        if (*s == '\n') { cx = x; y += FONT_HEIGHT; }
-        else { fb_putchar(cx, y, *s, fg, bg); cx += FONT_WIDTH; }
+        if (*s == '\n') { cx = x; y += ch; }
+        else { fb_putchar(cx, y, *s, fg, bg); cx += cw; }
         s++;
     }
 }
 
 void fb_scroll(uint32_t bg)
 {
+    uint32_t ch = FONT_HEIGHT * fb_font_scale;
     uint8_t *dst = (uint8_t *)fb_addr;
-    uint8_t *src = (uint8_t *)fb_addr + FONT_HEIGHT * fb_pitch;
-    uint64_t rows_to_move = fb_height - FONT_HEIGHT;
+    uint8_t *src = (uint8_t *)fb_addr + ch * fb_pitch;
+    uint64_t rows_to_move = fb_height - ch;
     for (uint64_t row = 0; row < rows_to_move; row++) {
         uint8_t *d = dst + row * fb_pitch;
         uint8_t *s = src + row * fb_pitch;
@@ -86,51 +94,57 @@ void fb_scroll(uint32_t bg)
 
 void fb_newline(uint32_t bg)
 {
+    uint32_t ch = FONT_HEIGHT * fb_font_scale;
     fb_cursor_x  = 0;
-    fb_cursor_y += FONT_HEIGHT;
-    if (fb_cursor_y + FONT_HEIGHT > fb_height) {
+    fb_cursor_y += ch;
+    if (fb_cursor_y + ch > fb_height) {
         fb_scroll(bg);
-        fb_cursor_y -= FONT_HEIGHT;
+        fb_cursor_y -= ch;
     }
 }
 
 void fb_putchar_cursor(char c, uint32_t fg, uint32_t bg)
 {
+    uint32_t cw = FONT_WIDTH  * fb_font_scale;
+
     if (c == '\n') { fb_newline(bg); return; }
     if (c == '\b') {
-        if (fb_cursor_x >= FONT_WIDTH) {
-            fb_cursor_x -= FONT_WIDTH;
+        if (fb_cursor_x >= cw) {
+            fb_cursor_x -= cw;
             fb_putchar(fb_cursor_x, fb_cursor_y, ' ', fg, bg);
         }
         return;
     }
     fb_putchar(fb_cursor_x, fb_cursor_y, c, fg, bg);
-    fb_cursor_x += FONT_WIDTH;
-    if (fb_cursor_x + FONT_WIDTH > (uint32_t)fb_width)
+    fb_cursor_x += cw;
+    if (fb_cursor_x + cw > (uint32_t)fb_width)
         fb_newline(bg);
 }
 
 static void fb_putcodepoint(uint32_t cp, uint32_t fg, uint32_t bg)
 {
+    uint32_t cw = FONT_WIDTH  * fb_font_scale;
+    uint32_t ch = FONT_HEIGHT * fb_font_scale;
+
     if (cp >= 0x2800 && cp <= 0x28FF) {
         uint8_t dots = cp & 0xFF;
         int dot_col[8] = {0,0,0,1,1,1,0,1};
         int dot_row[8] = {0,1,2,0,1,2,3,3};
-        int dw = FONT_WIDTH  / 2;
-        int dh = FONT_HEIGHT / 4;
-        for (int y = 0; y < FONT_HEIGHT; y++)
-            for (int x = 0; x < FONT_WIDTH; x++)
+        int dw = (int)cw / 2;
+        int dh = (int)ch / 4;
+        for (uint32_t y = 0; y < ch; y++)
+            for (uint32_t x = 0; x < cw; x++)
                 fb_putpixel(fb_cursor_x + x, fb_cursor_y + y, bg);
         for (int d = 0; d < 8; d++) {
             if (!(dots & (1 << d))) continue;
-            int px = fb_cursor_x + dot_col[d] * dw + dw / 4;
-            int py = fb_cursor_y + dot_row[d] * dh + dh / 4;
+            int px = (int)fb_cursor_x + dot_col[d] * dw + dw / 4;
+            int py = (int)fb_cursor_y + dot_row[d] * dh + dh / 4;
             for (int y = 0; y < dh - 1; y++)
                 for (int x = 0; x < dw - 1; x++)
-                    fb_putpixel(px + x, py + y, fg);
+                    fb_putpixel((uint32_t)(px + x), (uint32_t)(py + y), fg);
         }
-        fb_cursor_x += FONT_WIDTH;
-        if (fb_cursor_x + FONT_WIDTH > (uint32_t)fb_width)
+        fb_cursor_x += cw;
+        if (fb_cursor_x + cw > (uint32_t)fb_width)
             fb_newline(bg);
         return;
     }

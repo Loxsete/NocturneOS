@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+extern uint32_t fb_font_scale; /* like 1, 2, 3... */
+
 void fb_init(void *addr, uint64_t width, uint64_t height, uint64_t pitch, uint16_t bpp);
 void fb_putpixel(uint32_t x, uint32_t y, uint32_t color);
 void fb_fill(uint32_t color);
