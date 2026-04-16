@@ -2,13 +2,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define PAGE_PRESENT (1ULL << 0)
-#define PAGE_WRITE (1ULL << 1)
-#define PAGE_USER (1ULL << 2)
-#define PAGE_NX (1ULL << 63)
+#define PAGE_PRESENT  (1ULL << 0)
+#define PAGE_WRITE    (1ULL << 1)
+#define PAGE_USER     (1ULL << 2)
+#define PAGE_NX       (1ULL << 63)
 
-#define KERNEL_FLAGS (PAGE_PRESENT | PAGE_WRITE)
-#define USER_FLAGS (PAGE_PRESENT | PAGE_WRITE | PAGE_USER)
+#define KERNEL_FLAGS  (PAGE_PRESENT | PAGE_WRITE)
+#define USER_FLAGS    (PAGE_PRESENT | PAGE_WRITE | PAGE_USER)
 
 typedef uint64_t *pml4_t;
 
