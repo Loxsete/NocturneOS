@@ -38,11 +38,3 @@ void kmemset(void *dst, uint8_t val, uint64_t n)
     uint8_t *d = dst;
     for (uint64_t i = 0; i < n; i++) d[i] = val;
 }
-
-void *memset(void *dst, int v, uint64_t n)
-{
-    uint8_t *d = dst;
-    for (uint64_t i = 0; i < n; i++)
-        d[i] = (uint8_t)v;
-    return dst;
-}

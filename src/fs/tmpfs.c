@@ -97,7 +97,6 @@ static int tmpfs_unlink(vfs_node_t *parent, const char *name)
     tmpfs_data_t *pd = (tmpfs_data_t *)parent->fs_data;
     for (int i = 0; i < pd->child_count; i++) {
         if (kstrcmp(pd->children[i]->name, name) == 0) {
-            
             for (int j = i; j < pd->child_count - 1; j++)
                 pd->children[j] = pd->children[j + 1];
             pd->child_count--;

@@ -43,4 +43,6 @@ enum {
     GDT_TSS_HIGH    = 6,
 };
 
+
+// Initialize the Global Descriptor Table
 void gdt_init(void);

@@ -207,7 +207,7 @@ void user_shell(void)
             } else {
                 char buf[512];
                 int pos = 0;
-        
+
                 for (int i = 2; i < argc; i++) {
                     int j = 0;
                     while (argv[i][j] && pos < (int)sizeof(buf) - 1) {
@@ -217,9 +217,9 @@ void user_shell(void)
                         buf[pos++] = ' ';
                     }
                 }
-        
+
                 buf[pos] = 0;
-        
+
                 cmd_write(argv[1], buf);
             }
         }

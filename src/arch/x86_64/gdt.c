@@ -1,5 +1,5 @@
 #include <arch/x86_64/gdt.h>
-#include <string.h>
+#include <lib/kstring.h>
 
 extern void gdt_load(struct gdt_ptr *ptr);
 extern void tss_load(uint16_t selector);
@@ -64,7 +64,7 @@ void gdt_init(void)
         0xFA, 0xA0);
 
     // TSS
-    memset(&kernel_tss, 0, sizeof(kernel_tss));
+    kmemset(&kernel_tss, 0, sizeof(kernel_tss));
     kernel_tss.rsp0 = 0; // todo sete
 
     gdt_set_tss(5, &kernel_tss);

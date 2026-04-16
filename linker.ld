@@ -25,7 +25,7 @@ SECTIONS {
     .requests : {
         KEEP(*(.requests))
     } :rodata
-    
+
     . = ALIGN(CONSTANT(MAXPAGESIZE));
 
     .data : {

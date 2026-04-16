@@ -42,7 +42,6 @@ void *kmalloc(uint64_t size)
     block_header_t *blk = find_free(size);
     if (!blk) return NULL;
 
-    
     if (blk->size >= size + sizeof(block_header_t) + 8) {
         block_header_t *split = (block_header_t *)((uint8_t *)blk + sizeof(block_header_t) + size);
         split->size = blk->size - size - sizeof(block_header_t);
@@ -71,7 +70,6 @@ void kfree(void *ptr)
     block_header_t *blk = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
     blk->free = 1;
 
-    
     block_header_t *cur = heap_head;
     while (cur && cur->next) {
         if (cur->free && cur->next->free) {
@@ -93,6 +91,6 @@ uint64_t kmalloc_free_size(void) {
     return free;
 }
 
-uint64_t kmalloc_heap_size(void) { 
-    return heap_total; 
+uint64_t kmalloc_heap_size(void) {
+    return heap_total;
 }

@@ -16,5 +16,9 @@ struct idt_ptr {
     uint64_t base;
 } __attribute__((packed));
 
+
+// Initialize the Interrupt Descriptor Table
 void idt_init(void);
+
+// Set an interrupt gate
 void idt_set(int vec, void *isr, uint8_t flags);

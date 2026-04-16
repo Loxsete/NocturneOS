@@ -9,7 +9,7 @@ static volatile struct limine_memmap_request memmap_req = {
     .revision = 0,
 };
 
-static uint8_t  pmm_bitmap[131072];
+static uint8_t  pmm_bitmap[131072]; // 1024 * 1024 / 8
 static uint64_t pmm_total;
 static uint64_t pmm_used;
 static uint64_t pmm_total_ram = 0;
@@ -29,23 +29,23 @@ void pmm_init(void)
         return;
     }
 
-    struct limine_memmap_response *mm = memmap_req.response;
+    struct limine_memmap_response *memmap = memmap_req.response;
 
-    for (uint64_t i = 0; i < mm->entry_count; i++) {
-        struct limine_memmap_entry *e = mm->entries[i];
+    for (uint64_t i = 0; i < memmap->entry_count; i++) {
+        struct limine_memmap_entry *ent = memmap->entries[i];
 
-        if (e->type == LIMINE_MEMMAP_USABLE ||
-            e->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE ||
-            e->type == LIMINE_MEMMAP_KERNEL_AND_MODULES)
+        if (ent->type == LIMINE_MEMMAP_USABLE ||
+            ent->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE ||
+            ent->type == LIMINE_MEMMAP_KERNEL_AND_MODULES)
         {
-            pmm_total_ram += e->length;
+            pmm_total_ram += ent->length;
         }
 
-        if (e->type != LIMINE_MEMMAP_USABLE) continue;
+        if (ent->type != LIMINE_MEMMAP_USABLE) continue;
 
-        uint64_t pages = e->length / PAGE_SIZE;
-        for (uint64_t p = 0; p < pages; p++) {
-            uint64_t idx = (e->base / PAGE_SIZE) + p;
+        uint64_t pages = ent->length / PAGE_SIZE;
+        for (uint64_t pg = 0; pg < pages; pg++) {
+            uint64_t idx = (ent->base / PAGE_SIZE) + pg;
             if (idx >= pmm_total) break;
             if (bitmap_test(idx)) { bitmap_clear(idx); pmm_used--; }
         }

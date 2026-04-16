@@ -28,7 +28,6 @@ static int64_t procfs_read(vfs_node_t *node, void *buf, uint64_t offset, uint64_
     procfs_file_data_t *d = (procfs_file_data_t *)node->fs_data;
     if (!d->fn) return 0;
 
-    
     uint8_t tmp[4096];
     int64_t total = d->fn(tmp, sizeof(tmp));
     if (total <= 0) return 0;
@@ -130,7 +129,7 @@ int64_t proc_mem_read(void *buf, uint64_t max)
 
     return pos;
 }
-static void cpuid(uint32_t leaf, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx) 
+static void cpuid(uint32_t leaf, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
 {
     __asm__ volatile("cpuid"
         : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
@@ -142,7 +141,7 @@ int64_t proc_cpu_read(void *buf, uint64_t max)
     char *out = (char *)buf;
     int pos = 0;
     (void)max;
-    
+
     uint32_t eax, ebx, ecx, edx;
     cpuid(0, &eax, &ebx, &ecx, &edx);
 
@@ -156,7 +155,7 @@ int64_t proc_cpu_read(void *buf, uint64_t max)
     for (int i = 0; v[i]; i++) out[pos++] = v[i];
     for (int i = 0; vendor[i]; i++) out[pos++] = vendor[i];
     out[pos++] = '\n';
-    
+
     uint32_t brand[12];
     cpuid(0x80000002, &brand[0],  &brand[1],  &brand[2],  &brand[3]);
     cpuid(0x80000003, &brand[4],  &brand[5],  &brand[6],  &brand[7]);

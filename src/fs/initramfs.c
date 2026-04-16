@@ -70,7 +70,7 @@ static vfs_node_t *mkpath(vfs_node_t *root, const char *path)
 
     vfs_node_t *child = vnode_finddir(root, part);
     if (!child) {
-        if (*rest == '\0') return root; 
+        if (*rest == '\0') return root;
         if (!root->ops || !root->ops->mkdir) return NULL;
         child = root->ops->mkdir(root, part);
         if (!child) return NULL;
@@ -98,7 +98,6 @@ int initramfs_unpack(void *data, uint64_t size, vfs_node_t *root)
     while (ptr + sizeof(cpio_header_t) <= end) {
         cpio_header_t *hdr = (cpio_header_t *)ptr;
 
-        
         if (kstrncmp(hdr->magic, CPIO_MAGIC, 6) != 0 &&
             kstrncmp(hdr->magic, CPIO_MAGIC_CRC, 6) != 0)
             break;
@@ -117,13 +116,10 @@ int initramfs_unpack(void *data, uint64_t size, vfs_node_t *root)
 
         if (ptr > end) break;
 
-        
         if (kstrcmp(name, "TRAILER!!!") == 0) break;
 
-        
         if (kstrcmp(name, ".") == 0 || namesize <= 1) continue;
 
-        
         const char *clean = name;
         if (clean[0] == '.' && clean[1] == '/') clean += 2;
         if (clean[0] == '/') clean++;
@@ -131,14 +127,11 @@ int initramfs_unpack(void *data, uint64_t size, vfs_node_t *root)
         int is_dir = (mode & 0170000) == 0040000;
 
         if (is_dir) {
-            
             mkpath(root, clean);
         } else {
-            
             const char *bname = basename(clean);
             vfs_node_t *parent = root;
 
-            
             int path_len = kstrlen(clean);
             int base_len = kstrlen(bname);
             if (path_len > base_len) {

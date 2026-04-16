@@ -51,10 +51,10 @@ uint64_t vmm_hhdm_offset(void)
 
 void vmm_map(pml4_t pml4, uint64_t virt, uint64_t phys, uint64_t flags)
 {
-    uint64_t i4 = (virt >> 39) & 0x1FF; 
-    uint64_t i3 = (virt >> 30) & 0x1FF; 
-    uint64_t i2 = (virt >> 21) & 0x1FF; 
-    uint64_t i1 = (virt >> 12) & 0x1FF; 
+    uint64_t i4 = (virt >> 39) & 0x1FF;
+    uint64_t i3 = (virt >> 30) & 0x1FF;
+    uint64_t i2 = (virt >> 21) & 0x1FF;
+    uint64_t i1 = (virt >> 12) & 0x1FF;
 
     uint64_t *pdpt = get_or_create(pml4,  i4, flags | PAGE_PRESENT);
     uint64_t *pd   = get_or_create(pdpt,  i3, flags | PAGE_PRESENT);
@@ -122,13 +122,12 @@ pml4_t vmm_init(void)
 
     pml4_t pml4 = (pml4_t)phys_to_virt(alloc_table());
 
-    
     for (uint64_t p = 0; p < 0x100000000ULL; p += PAGE_SIZE)
         vmm_map(pml4, hhdm + p, p, KERNEL_FLAGS);
 
     for (uint64_t off = 0; off < 0x4000000ULL; off += PAGE_SIZE)
         vmm_map(pml4, k_virt + off, k_phys + off, USER_FLAGS);
-        
+
     vmm_switch(pml4);
     kputs("vmm: init done\n");
 

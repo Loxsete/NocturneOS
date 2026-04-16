@@ -688,14 +688,13 @@ Standard string/memory ops, reimplemented freestanding. No libc dependency.
   "kstrcpy", "void kstrcpy(char *dst, const char *src, int max)", "Bounded copy, always null-terminates",
   "kmemcpy", "void kmemcpy(void *dst, const void *src, uint64_t n)", "Byte copy",
   "kmemset", "void kmemset(void *dst, uint8_t val, uint64_t n)", "Byte fill",
-  "memset", "void *memset(void *dst, int v, uint64_t n)", "C-compatible alias, returns dst",
 )
 
 *`kitoa` / `kitoa_hex` :*
 #table(
   columns: 3,
   "Function", "Signature", "Description",
-  "kitoa", "void kitoa(uint32_t n, char *buf)", "uint32_t → decimal string",
+  "kitoa", "void kitoa(uint32_t val, char *buf)", "uint32_t → decimal string",
   "kitoa_hex",
   "void kitoa_hex(uint64_t val, char *buf)",
   "uint64_t → 16-char uppercase hex, no 0x prefix; buf must be ≥ 17 bytes",
