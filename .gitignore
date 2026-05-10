@@ -1,5 +1,5 @@
 kernel.elf
-Silex.iso
+*.iso
 build/
 limine/
 iso_root/
