@@ -1,6 +1,8 @@
 #include <drivers/framebuffer.h>
 #include <console/font.h>
 #include <stdint.h>
+#include <lib/katoi.h>
+
 
 static void    *fb_addr;
 uint64_t        fb_width;
@@ -128,27 +130,79 @@ void fb_putchar_cursor(char c, uint32_t fg, uint32_t bg)
         fb_newline(term_bg);
 }
 
+static uint32_t ansi_256_to_rgb(int n)
+{
+    static const uint32_t basic[16] = {
+        0x000000, 0x800000, 0x008000, 0x808000,
+        0x000080, 0x800080, 0x008080, 0xC0C0C0,
+        0x808080, 0xFF0000, 0x00FF00, 0xFFFF00,
+        0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF
+    };
+
+    if (n < 16)
+        return basic[n];
+
+    if (n >= 16 && n <= 231) {
+        n -= 16;
+
+        int r = (n / 36) % 6;
+        int g = (n / 6) % 6;
+        int b = n % 6;
+
+        r = r ? r * 40 + 55 : 0;
+        g = g ? g * 40 + 55 : 0;
+        b = b ? b * 40 + 55 : 0;
+
+        return (r << 16) | (g << 8) | b;
+    }
+
+    if (n >= 232 && n <= 255) {
+        int v = (n - 232) * 10 + 8;
+        return (v << 16) | (v << 8) | v;
+    }
+
+    return 0xFFFFFF;
+}
+
 static void handle_ansi(void)
 {
     esc_buf[esc_len] = 0;
-    int code = 0;
 
-    for (int i = 0; i <= esc_len; i++) {
-        if (esc_buf[i] == ';' || esc_buf[i] == 0) {
-            switch (code) {
-                case 0: term_fg = 0xFFFFFF; break;
-                case 30: term_fg = 0x000000; break;
-                case 31: term_fg = 0xFF3333; break;
-                case 32: term_fg = 0x33FF33; break;
-                case 33: term_fg = 0xFFFF33; break;
-                case 34: term_fg = 0x3399FF; break;
-                case 35: term_fg = 0xFF33FF; break;
-                case 36: term_fg = 0x33FFFF; break;
-                case 37: term_fg = 0xFFFFFF; break;
-            }
-            code = 0;
-        } else {
-            code = code * 10 + (esc_buf[i] - '0');
+    int nums[8];
+    int count = 0;
+
+    char *p = esc_buf;
+
+    while (*p && count < 8) {
+        nums[count++] = katoi(p);
+
+        while (*p && *p != ';')
+            p++;
+
+        if (*p == ';')
+            p++;
+    }
+
+    for (int i = 0; i < count; i++) {
+
+        switch (nums[i]) {
+
+            case 0:  term_fg = 0xFFFFFF; break;
+            case 30: term_fg = 0x000000; break;
+            case 31: term_fg = 0xFF3333; break;
+            case 32: term_fg = 0x33FF33; break;
+            case 33: term_fg = 0xFFFF33; break;
+            case 34: term_fg = 0x3399FF; break;
+            case 35: term_fg = 0xFF33FF; break;
+            case 36: term_fg = 0x33FFFF; break;
+            case 37: term_fg = 0xFFFFFF; break;
+
+            case 38:
+                if (i + 2 < count && nums[i + 1] == 5) {
+                    term_fg = ansi_256_to_rgb(nums[i + 2]);
+                    i += 2;
+                }
+                break;
         }
     }
 }

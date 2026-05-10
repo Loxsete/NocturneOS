@@ -264,7 +264,7 @@ int64_t proc_mem_free_read(void *buf, uint64_t max)
 
     kitoa(free_mb, tmp);
 
-    const char *label = "mem free:   ";
+    const char *label = "mem free: ";
     for (int i = 0; label[i]; i++)
             out[pos++] = label[i];
 
