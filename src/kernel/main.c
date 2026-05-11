@@ -19,6 +19,7 @@
 #include <exec/elf.h>
 #include <fs/ext2.h>
 #include <kernel/fd.h>
+#include <kernel/task.h>
 
 
 __attribute__((used, section(".requests")))
@@ -53,6 +54,24 @@ static void early_vfs_init(void *initramfs_data, uint64_t initramfs_size)
             initramfs_unpack(initramfs_data, initramfs_size, root);
 }
 
+void taskA(void)
+{
+    while (1) {
+        kputs("A");
+        for (volatile int i = 0; i < 10000000; i++);
+        task_yield();
+    }
+}
+
+void taskB(void)
+{
+    while (1) {
+        kputs("B");
+        for (volatile int i = 0; i < 10000000; i++);
+        task_yield();
+    }
+}
+
 void _start(void)
 {
     if (!fb_request.response || fb_request.response->framebuffer_count == 0)
@@ -77,10 +96,17 @@ void _start(void)
     early_vfs_init(_binary_build_initramfs_cpio_start,
                    _binary_build_initramfs_cpio_end - _binary_build_initramfs_cpio_start);
 
-    kputs("[kernel] starting /bin/init\n");
+    /*kputs("[kernel] starting /bin/init\n");
     if (elf_exec("/bin/init") != 0)
             kputs("FATAL: cannot exec /bin/init\n");
+	*/
 
+	task_init();
+	
+	task_t *a = task_create(taskA);
+	task_t *b = task_create(taskB);
+	
+	task_switch(a);
     for (;;)
             __asm__ volatile("hlt");
 }
