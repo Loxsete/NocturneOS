@@ -1,23 +1,29 @@
 #include <libc/stdio.h>
 #include <libc/stdlib.h>
 #include <ulib/syscall.h>
-#include <ulib/path.h>
 
-
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-	// some like this:
-    // argv0 = "/bin/mount"
-    // argv1 = source
-    // argv2 = mountpoint
-    // argv3 = fstype (optional, idk)
-    if (argc < 2) {
-        puts("usage: mkdir <path>\n");
-        exit(0);
-    }
-    char path[256];
-    u_resolve_path(argv[1], path, 256);
-    sys_mkdir(path) == 0 ? puts("ok\n") : puts("failed\n");
+    // usage:
+    // mount <source> <mountpoint> [fstype]
 
-    exit(0);
+    if (argc < 3) {
+        printf("usage: %s <source> <mountpoint> [fstype]\n", argv[0]);
+        printf("example: %s disk0 /mnt ext2\n", argv[0]);
+        exit(1);
+    }
+
+    const char *source = argv[1];
+    const char *mountpoint = argv[2];
+    const char *fstype = (argc >= 4) ? argv[3] : "auto";
+
+    int64_t res = sys_mount(source, mountpoint, fstype);
+
+    if (res == 0) {
+        puts("mounted\n");
+    } else {
+        puts("mount failed\n");
+    }
+
+    return 0;
 }
