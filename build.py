@@ -153,8 +153,11 @@ def build_user_binary(out_path: str, sources: list[str]):
             sh(f"{AS} {USER_ASFLAGS} {src} -o {obj}")
     sh(f"{LD} {USER_LDFLAGS} -o {out_path} {' '.join(objs)}")
 
+SBIN_APPS = {"init"}
+
 def build_userspace():
     os.makedirs("build/initramfs/bin", exist_ok=True)
+    os.makedirs("build/initramfs/sbin", exist_ok=True)
     bin_dir = "userspace/src/bin"
     if not os.path.exists(bin_dir):
         return
@@ -167,7 +170,8 @@ def build_userspace():
             sources += glob.glob(os.path.join(app_path, "**", ext), recursive=True)
         if not sources:
             continue
-        out = f"build/initramfs/bin/{app}"
+        target_dir = "sbin" if app in SBIN_APPS else "bin"
+        out = f"build/initramfs/{target_dir}/{app}"
         build_user_binary(out, sources)
 
 def build_initramfs():

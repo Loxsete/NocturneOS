@@ -18,6 +18,7 @@ void early_vfs_init(void *initramfs_data, uint64_t initramfs_size)
 
     // this is minimum, to load init
     vfs_mkdir("/bin");
+    vfs_mkdir("/sbin");
     vfs_mkdir("/tmp");
     vfs_mkdir("/etc");
 

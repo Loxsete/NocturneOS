@@ -56,9 +56,9 @@ void _start(void)
     early_vfs_init(_binary_build_initramfs_cpio_start,
                    _binary_build_initramfs_cpio_end - _binary_build_initramfs_cpio_start);
 
-    kputs("[kernel] starting /bin/init\n");
-    if (elf_exec("/bin/init") != 0)
-            kputs("FATAL: cannot exec /bin/init\n");
+    kputs("[kernel] starting /sbin/init\n");
+    if (elf_exec("/sbin/init") != 0)
+            kputs("FATAL: cannot exec /sbin/init\n");
 
     for (;;)
             __asm__ volatile("hlt");
